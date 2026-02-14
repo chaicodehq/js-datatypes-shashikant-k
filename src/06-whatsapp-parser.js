@@ -39,5 +39,77 @@
  *   //      text: "I love this song", wordCount: 4, sentiment: "love" }
  */
 export function parseWhatsAppMessage(message) {
-  // Your code here
+  if (typeof message !== "string" || message.trim() === "") return null;
+
+  const extractDate = (message) => {
+    const commaIndex = message.indexOf(", ");
+    if (commaIndex === -1) return null;
+
+    return message.substring(0, commaIndex);
+  };
+
+  const extractTime = (message) => {
+    const commaIndex = message.indexOf(", ");
+    if (commaIndex === -1) return null;
+
+    const timeStart = commaIndex + 2;
+    const timeEnd = message.indexOf(" - ", timeStart);
+
+    if (timeEnd === -1) return null;
+
+    return message.substring(timeStart, timeEnd);
+  };
+
+  const extractSender = (message) => {
+    const dashIndex = message.indexOf(" - ");
+    if (dashIndex === -1) return null;
+
+    const colonIndex = message.indexOf(": ", dashIndex);
+    if (colonIndex === -1) return null;
+
+    return message.substring(dashIndex + 3, colonIndex);
+  };
+
+  const extractMessage = (message) => {
+    const colonIndex = message.indexOf(": ");
+    if (colonIndex === -1) return null;
+
+    return message.substring(colonIndex + 2).trim();
+  };
+
+  const extractWordCount = (message) => {
+    const text = extractMessage(message);
+    if (text === null) return null;
+
+    return text.split(" ").filter((word) => word !== "").length;
+  };
+
+  const extractSentiment = (message) => {
+    let text = extractMessage(message);
+    if (text === null) return null;
+
+    text = text.toLowerCase();
+    if (text.includes("😂") || text.includes(":)") || text.includes("haha")) return "funny" ;
+    if (text.includes("❤") || text.includes("love") || text.includes("pyaar")) return "love";
+
+    return "neutral"; 
+  };
+
+  const date = extractDate(message);
+  const time = extractTime(message);
+  const sender = extractSender(message);
+  const text = extractMessage(message);
+  const wordCount = extractWordCount(message);
+  const sentiment = extractSentiment(message);
+
+  if (!date || !time || !sender || !text) return null;
+
+  return {
+    date: date,
+    time: time,
+    sender: sender,
+    text: text,
+    wordCount: wordCount,
+    sentiment: sentiment
+  };
 }

@@ -47,5 +47,58 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  const validTransactions = transactions.filter((transaction) => {
+    return transaction.amount > 0 && (transaction.type === "credit" || transaction.type === "debit");
+  });
+
+  if (validTransactions.length === 0) return null;
+
+  const totalCredit = validTransactions
+    .filter((transaction) => transaction.type === "credit")
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  const totalDebit = validTransactions
+    .filter((transaction) => transaction.type === "debit")
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  const netBalance = totalCredit - totalDebit;
+
+  const transactionCount = validTransactions.length;
+
+  const avgTransaction = Math.round((totalCredit + totalDebit) / transactionCount);
+
+  const highestTransaction = validTransactions.reduce((acc, transaction) => transaction.amount > acc.amount ? transaction : acc, validTransactions[0]);
+
+  const categoryBreakdown = validTransactions.reduce((acc, transaction) => {
+    if (!acc[transaction.category]) acc[transaction.category] = 0;
+    acc[transaction.category] += transaction.amount;
+    return acc;
+  }, {});
+
+  const frequentContactObj = validTransactions.reduce((acc, transaction) => {
+    if (!acc[transaction.to]) acc[transaction.to] = 0;
+    acc[transaction.to]++;
+    return acc;
+  }, {});
+
+  const frequentContact = Object.entries(frequentContactObj).sort((a, b) => b[1] - a[1])[0][0];
+
+  const allAbove100 = validTransactions.every((transaction) => transaction.amount > 100);
+
+  const hasLargeTransaction = validTransactions.some((transaction) => transaction.amount >= 5000);
+
+  return {
+    totalCredit,
+    totalDebit,
+    netBalance,
+    transactionCount,
+    avgTransaction,
+    highestTransaction,
+    categoryBreakdown,
+    frequentContact,
+    allAbove100,
+    hasLargeTransaction
+  };
 }
